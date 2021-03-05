@@ -15,7 +15,16 @@ int main(int argc,
          char *argv[]) {
   map<string, double[NUM_OF_OBSERVATIONS]> data;
   fstream inFile;
-  string filePath;
+  string filePath, comma, varTime, varName, line;
+  int age, gender, admitType;
+  double currVarVal;
+
+  for (int i = 1; i <= NUM_OF_OBSERVATIONS; i++) {
+    filePath = mainFilePath + to_string(i) + ".csv";
+    while (inFile >> line) {
+      // stuff
+    }
+  }
 
   return 0;
 }
