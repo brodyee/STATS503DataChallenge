@@ -3,7 +3,9 @@
 #include <string>
 #include "CONST.h"
 
-double timeToInt();
+vector<string> readRow(stringstream& s);
 
-void mapToCSV(std::map<string, double[NUM_OF_OBSERVATIONS]> map);
+void addToData(std::map<string, container>& data, vector<string>& row);
+
+void addDataToFiles(std::map<string, container>& data, int i);
 
