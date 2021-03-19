@@ -1,5 +1,13 @@
+#ifndef _CONST_H_
+#define _CONST_H_
 
 #include <string>
 
-const string mainFilePath = "/mnt/c/User/erlan/Documents/wn21/STATS503/final_data/x_all";
-const int NUM_OF_OBSERVATIONS = 10000;
+const std::string mainFilePath = "/home/berlands/x_all/";
+const int NUM_OF_OBSERVATIONS = 5000;
+const int TIME = 0;
+const int VAR = 1;
+const int VAL = 2;
+const int MISSING = -1;
+
+#endif
