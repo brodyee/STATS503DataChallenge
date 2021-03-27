@@ -1,0 +1,420 @@
+---
+title: "EDA for 14 variables"
+author: "Entong Li"
+date: "3/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = F, warning = F)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(gridExtra)
+library(GGally)
+vars <- c("GCS.csv", "Glucose.csv", "HCO3.csv", "HCT.csv", "HR.csv", "K.csv", "Lactate.csv", "MAP.csv", "MechVent.csv", "Mg.csv", "Na.csv", "NIDiasABP.csv", "NIMAP.csv", "NISysABP.csv")
+results <- read.csv("train_outcome.csv",header = T)
+```
+
+There are 14 variables totally that need to be explored, they are: `r print(vars)` 
+
+Preform the same EDA based on each of them, finding if any of them could have significant effect on outcome. 
+
+For each test, as different patients will take different times of this test, we need to consider one, or more than one, uniform measurement(s) to measure the value of the test. Here, I will consider four measurements: mean, min, max, and changing pattern of test value over times. For the variable changing pattern, if the test value increases obviously, or said the sum of the difference between previous test score and next test score is larger than 2 units, over times, it will equal to 1; if the test value decreases obviously over times, it will equal to -1; if the test value is stable, then it will equal to 0.
+
+# GCS:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[1], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the GCS data, and one patient would take this GCS test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+# function to get the measurements:
+getdat <- function(data = dat1, cpvalue){
+  dat <- merge(dat1[,1:4], results, by.x = "id")
+  n <- dim(dat1)[1]
+  dat1 <- dat1[,-c(1,2,3,4)]
+  dat$mean <- rowMeans(dat1, na.rm = T)
+  dat$max <- apply(dat1, 1, function(x) max(x, na.rm = TRUE))
+  dat$min <- apply(dat1, 1, function(x) min(x, na.rm = T))
+  ChangingPattern <- rep(NA, length.out=n)
+  for (i in 1:n) {
+    value = sum(diff(as.numeric(dat1[i,])), na.rm = T)
+    if (value >= cpvalue) {ChangingPattern[i] = 1}
+    else if (value <= -cpvalue) {ChangingPattern[i] = -1}
+    else {ChangingPattern[i] = 0}
+  }
+  dat$CP <- ChangingPattern
+  dat$outcome <- factor(dat$outcome)
+  levels(dat$outcome) = c("Negative", "Positive")
+  dat$numTest <- apply(dat1, 1, function(x) length(which(!is.na(x))))
+  return(dat)
+}
+
+
+# function to draw the boxplots
+drawpic <- function(y){
+  p1 <- ggplot(data = dat, aes(y = dat[,y], group = outcome, color = outcome)) + geom_boxplot() + labs(title = paste(colnames(dat)[y], "for all changing pattern", sep=" ")) + ylab(colnames(dat)[y])
+  dat2 <- dat%>%filter(CP == 1)
+  p2 <- ggplot(data = dat2, aes(y = dat2[,y], group = outcome, color = outcome)) + geom_boxplot() + labs(title = paste(colnames(dat)[y], "for CP = 1", sep=" ")) + ylab(colnames(dat)[y])
+  dat3 <- dat%>%filter(CP == -1)
+  p3 <- ggplot(data = dat3, aes(y = dat3[,y], group = outcome, color = outcome)) + geom_boxplot() + labs(title = paste(colnames(dat)[y], "for CP = -1", sep=" ")) + ylab(colnames(dat)[y])
+  dat4 <- dat%>%filter(CP == 0)
+  p4 <- ggplot(data = dat4, aes(y = dat4[,y], group = outcome, color = outcome)) + geom_boxplot() + labs(title = paste(colnames(dat)[y], "for CP = 0", sep=" ")) + ylab(colnames(dat)[y])
+  grid.arrange(p1, p2, p3, p4, ncol=2)
+}
+```
+
+
+```{r}
+dat <- getdat(dat1, 5)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+# Glucose:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[2], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the Glucose data, and one patient would take this Glucose test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, 10)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+
+# HCO3:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[3], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the HCO3 data, and one patient would take this HCO3 test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, 3)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+
+
+
+# HCT:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[4], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the HTC data, and one patient would take this HTC test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, 3)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+# HR:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[5], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the HR data, and one patient would take this HR test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, 5)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+# K:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[6], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the K data, and one patient would take this K test for most `r dim(dat1)[2] -4` times. 
+
+Also, as the test score of this K test are all less than 10, I change to view sum of difference between previous test score and next test score larger than 1 as increasing pattern, less than 1 as decreasing pattern.
+
+```{r}
+dat <- getdat(dat1, 1)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+# Lactate:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[7], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the Lactate data, and one patient would take this Lactate test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, 1)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+
+
+
+# MAP:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[8], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the Glucose data, and one patient would take this Glucose test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, 10)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+# MechVent:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[9], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the Glucose data, and one patient would take this Glucose test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, .5)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+# Mg:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[10], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the Glucose data, and one patient would take this Glucose test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, .5)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+# Na:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[11], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the Glucose data, and one patient would take this Glucose test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, 5)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+
+# NIDiasABP:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[12], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the Glucose data, and one patient would take this Glucose test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, 5)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+# NIMAP:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[13], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the Glucose data, and one patient would take this Glucose test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, 5)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
+
+
+# NISysABP:
+
+```{r}
+dat1 <- read.csv(paste("data/eachVar", vars[14], sep="/"), header = F)
+names(dat1)[1:4] <- c("id", "age", "gender", "admission type")
+```
+
+There are `r dim(dat1)[1]` patients that have the Glucose data, and one patient would take this Glucose test for most `r dim(dat1)[2] -4` times. 
+
+```{r}
+dat <- getdat(dat1, 5)
+ggpairs(dat[,5:10])
+drawpic(6)
+drawpic(7)
+drawpic(8)
+drawpic(10)
+```
+
+```{r}
+p1 <- ggplot(data = dat, aes(y = CP, group = outcome, color = outcome, fill = outcome)) + geom_bar() + ylab("Changing Pattern")
+p2 <- ggplot(data = dat, aes(y = numTest, group = CP, color = CP)) + geom_boxplot()
+grid.arrange(p1, p2, ncol = 2)
+```
