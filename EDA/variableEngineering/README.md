@@ -10,3 +10,7 @@
   * Mean, Max, and Min
   * CP: changing pattern of the test score. I first take the difference between the previous test score and next test score, then sum up the difference. If the sum-up value is larger than a specific value, then I think it shows an increasing pattern, CP = 1; if it's smaller, then I think it shows a decreasing pattern, CP = -1; if it's between, then I think the changing pattern is stable, CP = 0. This CP is similar to the ChangeStoF given by Brody.
   * numTest: came up by Brody, same meaning mentioned above.
+
+* Ji's EDA: : I was not able to find meaningful correlation between outcome and variables. Not sure range/change in variable can bring meaningful data when there are too many cases where only one measurement is recorded...
+  * Mean, Max, and Min
+  * numTest: came up by Brody, same meaning mentioned above.
