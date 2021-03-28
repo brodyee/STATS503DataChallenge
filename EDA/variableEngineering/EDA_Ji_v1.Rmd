@@ -31,8 +31,11 @@ variFunc <- function(variName){
   variData_final <- merge(variData[,1:4], response, by.x = "id")
   variData_data <- variData[,5:dim(variData)[2]]
   variData_final$mean = rowMeans(variData_data, na.rm = T)
+  variData_final$max = apply(variData_data, 1, function(x) max(x, na.rm = T))
+  variData_final$min = apply(variData_data, 1, function(x) min(x, na.rm = T))
+  variData_final$numTest <- apply(variData_data, 1, function(x) length(which(!is.na(x))))
   
-  ggpairs(variData_final[,c("outcome","gender","admission type", "mean")], mapping = ggplot2::aes(colour=outcome)) + theme_bw()
+  ggpairs(variData_final[,c("outcome","gender","admission type", "mean","min","max",'numTest')], mapping = ggplot2::aes(colour=outcome)) + theme_bw()
 }
 ```
 
@@ -62,6 +65,9 @@ names(SAPS)[1:4] <- c("id", "age", "gender", "admission type")
 SAPS_final <- merge(SAPS[,1:4], response, by.x = "id")
 SAPS_data <- SAPS[,5:dim(SAPS)[2]]
 SAPS_final$mean = rowMeans(SAPS_data, na.rm = T)
+SAPS_final$max = apply(SAPS_data, 1, function(x) max(x, na.rm = T))
+SAPS_final$min = apply(SAPS_data, 1, function(x) min(x, na.rm = T))
+SAPS_final$numTest <- apply(SAPS_data, 1, function(x) length(which(!is.na(x))))
 
-ggpairs(SAPS_final[,c("outcome","gender","admission type", "mean")], mapping = ggplot2::aes(colour=outcome)) + theme_bw()
+ggpairs(SAPS_final[,c("outcome","gender","admission type", "mean",'min','max','numTest')], mapping = ggplot2::aes(colour=outcome)) + theme_bw()
 ```
