@@ -27,7 +27,7 @@ int main(int argc,
 
   // gets the train indices
   idxs.reserve(7090);
-  for (size_t i = 1; i < 2/*7090*/; i++)
+  for (size_t i = 1; i < 7090; i++)
     idxs.push_back(i);
 
   // gets the column names printed
@@ -54,6 +54,7 @@ int main(int argc,
       return 1;
 
     getline(inFile, line); // gets Time,Variable,Value out of the way
+    attributes.resize(4);
     for (int i = 0; i < 4; i++) {
       getline(inFile, line);
       stringstream s(line);
@@ -67,6 +68,7 @@ int main(int argc,
     }
            
     addDataToFiles(data, attributes, idx);
+    attributes.clear();
     data.clear();
     inFile.close();
   }

@@ -21,15 +21,26 @@ void readRow(std::stringstream& s,
 void getAttributes(std::vector<std::pair<std::string, double>>& attributes,
                    std::stringstream& s) {
   std::vector<std::string> row;
+  int spot = 0;
   readRow(s, row);
 
-  attributes.push_back( make_pair(row[VAR], std::stod(row[VAL])) );  
+  for (int i = 0; i < 4; i++) {
+    if (ATT_COLS[i] == row[VAR]) {
+      spot = i;
+      break;
+    }
+  }
+
+  attributes[spot] = make_pair(row[VAR], std::stod(row[VAL]));  
 }
 
 void addToData(std::map<std::string, std::vector<double>>& data, 
                std::stringstream& s) {
   std::vector<std::string> row;
   readRow(s, row);
+
+  if (row[VAR] == "")
+    row[VAR] = "noLabel";
 
   if (data.find(row[VAR]) == data.end() && row[VAR] != "NA") 
     data[row[VAR]] = {std::stod(row[VAL])};
@@ -41,7 +52,7 @@ void getVariables(std::map<std::string, std::vector<double>>& data) {
   double mean = 0, max, min, range, changeStoF, numTest;
   for (auto& it : data) {
     numTest = it.second.size();
-    changeStoF = *end(it.second) - *begin(it.second);
+    changeStoF = *--end(it.second) - *begin(it.second);
     max = *begin(it.second), min = *begin(it.second);
     for (auto num : it.second) {
       mean += num;
@@ -51,6 +62,7 @@ void getVariables(std::map<std::string, std::vector<double>>& data) {
         min = num;
     }
     mean /= numTest;
+    range = max - min;
     it.second.resize(6);
     it.second = {mean, max, min, range, changeStoF, numTest};
   }
@@ -59,9 +71,10 @@ void getVariables(std::map<std::string, std::vector<double>>& data) {
 void addDataToFiles(std::map<std::string, std::vector<double>>& data,
                     std::vector<std::pair<std::string, double>>& attributes, 
                     int i) {
+  bool repeat = false;
   std::string filePath;
   std::fstream outFile;
-  size_t col_idx = 0, last_idx = 0;
+  int col_idx = 0, last_idx = -1;
 
   getVariables(data);
 
@@ -80,20 +93,27 @@ void addDataToFiles(std::map<std::string, std::vector<double>>& data,
 
   col_idx = 0;
   for (auto& it : data) {
-    while (it.first != COL_NAMES[col_idx]) 
-      col_idx++;
+    repeat = false;
+    for (int i = 0; i < 4; i++) {
+      if (ATT_COLS[i] == it.first) {
+        repeat = true;
+        break;
+      }
+    }
+    
+    if (!repeat) {
+      while (it.first != COL_NAMES[col_idx]) 
+        col_idx++;
 
-    if (col_idx == (COL_NAMES.size() - 1))
-      col_idx--;
+      if ((col_idx - last_idx) > 1) {
+        for (size_t i = 0; i < 6*(col_idx - last_idx - 1); i++)
+          outFile << ",";
+      } 
+      for (size_t i = 0; i < it.second.size(); i++) 
+        outFile << "," << it.second[i];
 
-    if ((col_idx - last_idx) > 0) {
-      for (size_t i = 0; i < 6*(col_idx - last_idx); i++)
-        outFile << ",";
-    } 
-    for (size_t i = 0; i < it.second.size(); i++) 
-      outFile << "," << it.second[i];
-
-    last_idx = col_idx++;
+      last_idx = col_idx++;
+    }
   }
 
   outFile << std::endl;
