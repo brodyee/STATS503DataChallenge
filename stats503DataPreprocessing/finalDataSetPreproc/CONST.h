@@ -10,8 +10,8 @@ const int TIME = 0;
 const int VAR = 1;
 const int VAL = 2;
 const int MISSING = -1;
-const std::vector<std::string> COL_NAMES = {"RecordID","Age","Gender","AdmissionType",
-                                           "ALP", "ALT", "AST","Albumin","BUN",
+const std::vector<std::string> ATT_COLS = {"RecordID","Age","Gender","AdmissionType"};
+const std::vector<std::string> COL_NAMES = {"ALP", "ALT", "AST","Albumin","BUN",
                                            "Bilirubin","Cholesterol","Creatinine",
                                            "DiasABP","FiO2","GCS","Glucose","HCO3",
                                            "HCT","HR","K","Lactate","MAP","MechVent",

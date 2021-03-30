@@ -69,19 +69,22 @@ void addDataToFiles(std::map<std::string, std::vector<double>>& data,
   outFile.open(filePath, std::ios::app | std::ios::out);
 
   for (auto& it : attributes) {
-    if (COL_NAMES[col_idx] == it.first) {
+    if (ATT_COLS[col_idx] == it.first) {
       outFile << it.second;
       if (col_idx != 3)
         outFile << ",";
     } else
-      std::cout << "Attribute " << COL_NAMES[col_idx] << " missing  on " << i << std::endl;
+      std::cout << "Attribute " << ATT_COLS[col_idx] << " missing  on " << i << std::endl;
     col_idx++;
   }
 
-  last_idx = col_idx;
+  col_idx = 0;
   for (auto& it : data) {
     while (it.first != COL_NAMES[col_idx]) 
       col_idx++;
+
+    if (col_idx == (COL_NAMES.size() - 1))
+      col_idx--;
 
     if ((col_idx - last_idx) > 0) {
       for (size_t i = 0; i < 6*(col_idx - last_idx); i++)
