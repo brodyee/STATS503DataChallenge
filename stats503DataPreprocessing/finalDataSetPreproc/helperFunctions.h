@@ -39,7 +39,7 @@ void addToData(std::map<std::string, std::vector<double>>& data,
 
 void getVariables(std::map<std::string, std::vector<double>>& data) {
   double mean = 0, max, min, range, changeStoF, numTest;
-  for (auto it : data) {
+  for (auto& it : data) {
     numTest = it.second.size();
     changeStoF = *end(it.second) - *begin(it.second);
     max = *begin(it.second), min = *begin(it.second);
@@ -68,7 +68,7 @@ void addDataToFiles(std::map<std::string, std::vector<double>>& data,
   filePath = "/home/berlands/CODE/STATS503DataChallenge/data/trainData.csv";
   outFile.open(filePath, std::ios::app | std::ios::out);
 
-  for (auto it : attributes) {
+  for (auto& it : attributes) {
     if (COL_NAMES[col_idx] == it.first) {
       outFile << it.second;
       if (col_idx != 3)
@@ -78,17 +78,17 @@ void addDataToFiles(std::map<std::string, std::vector<double>>& data,
     col_idx++;
   }
 
-  for (auto it : data) {
+  last_idx = col_idx;
+  for (auto& it : data) {
     while (it.first != COL_NAMES[col_idx]) 
       col_idx++;
 
     if ((col_idx - last_idx) > 0) {
       for (size_t i = 0; i < 6*(col_idx - last_idx); i++)
         outFile << ",";
-    } else {
-      for (size_t i = 0; i < it.second.size(); i++) 
-        outFile << "," << it.second[i];
-    }
+    } 
+    for (size_t i = 0; i < it.second.size(); i++) 
+      outFile << "," << it.second[i];
 
     last_idx = col_idx++;
   }
