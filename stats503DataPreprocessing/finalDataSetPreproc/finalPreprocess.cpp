@@ -35,8 +35,10 @@ int main(int argc,
   filePath = "/home/berlands/CODE/STATS503DataChallenge/data/trainData.csv";
   outFile.open(filePath, std::ios::app | std::ios::out); 
 
-  for (auto col : COL_NAMES)
-    outFile << col << ","; 
+  for (auto col : COL_NAMES) {
+    for (auto addOn : COL_ADD_ONS)
+      outFile << col << "_" << addOn << ","; 
+  }
 
   outFile << std::endl;
   outFile.close();

@@ -19,5 +19,7 @@ const std::vector<std::string> COL_NAMES = {"RecordID","Age","Gender","Admission
                                            "PaCO2","PaO2","Platelets","RespRate",
                                            "SAPS","SaO2","SysABP","Temp","TroponinI",
                                            "TroponinT","Urine","WBC","noLabel","pH"};
+const std::vector<std::string> COL_ADD_ONS = {"mean", "max", "min", "range", 
+                                             "changeStoF", "numTest"};
 
 #endif
