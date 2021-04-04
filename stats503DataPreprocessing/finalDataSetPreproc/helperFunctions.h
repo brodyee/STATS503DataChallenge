@@ -51,6 +51,7 @@ void addToData(std::map<std::string, std::vector<double>>& data,
 void getVariables(std::map<std::string, std::vector<double>>& data) {
   double mean = 0, max, min, range, changeStoF, numTest;
   for (auto& it : data) {
+    mean = 0;
     numTest = it.second.size();
     changeStoF = *--end(it.second) - *begin(it.second);
     max = *begin(it.second), min = *begin(it.second);
