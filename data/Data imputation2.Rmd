@@ -1,0 +1,657 @@
+---
+title: "Data Imputation for test set"
+author: "Entong Li"
+date: "4/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+library(knitr)
+library(dplyr)
+library(tidyverse)
+```
+
+
+```{r}
+data <- read.csv("trainData.csv", header = T)
+data <- data[,-233]
+response <- read.csv("train_outcome.csv",header = T)
+data <- merge(data, response, by.x = "RecordID", by.y = "id")
+train <- read.csv("Training Set for trainData.csv",header = T)
+train.id = train$RecordID
+test = data[-train.id,]
+```
+
+
+# Data Imputation for train:
+
+
+
+```{r}
+resp1 <- test %>% filter(outcome == 1)
+resp0 <- test %>% filter(outcome == 0)
+```
+
+
+```{r}
+changeD1 <- function(m1, s, end){
+  m1 <- as.data.frame(m1)
+  for (i in 1:n1) {
+  if (resp1[i,4] == 1) {
+    if (length(m1[m1$AdmissionType == 1, 2])==0) m11 = NA
+    else{m11 = m1[m1$AdmissionType == 1, 2]}
+    resp1[i,s:(s+2)] = ifelse(is.na(resp1[i,s]), m11, resp1[i,s:(s+2)])
+  }
+  if (resp1[i,4] == 2) {
+    if (length(m1[m1$AdmissionType == 2, 2])==0) m12 = NA
+    else{m12 = m1[m1$AdmissionType == 2, 2]}
+    resp1[i,s:(s+2)] = ifelse(is.na(resp1[i,s]), m12, resp1[i,s:(s+2)])
+  }
+  if (resp1[i,4] == 3) {
+    if (length(m1[m1$AdmissionType == 3, 2])==0) m13 = NA
+    else{m13 = m1[m1$AdmissionType == 3, 2]}
+    resp1[i,s:(s+2)] = ifelse(is.na(resp1[i,s]), m13, resp1[i,s:(s+2)])
+  }
+  if (resp1[i,4] == 4) {
+    if (length(m1[m1$AdmissionType == 4, 2])==0) m14 = NA
+    else{m14 = m1[m1$AdmissionType == 4, 2]}
+    resp1[i,s:(s+2)] = ifelse(is.na(resp1[i,s]), m14, resp1[i,s:(s+2)])
+  }
+  resp1[i, (end-2):end] = ifelse(is.na(resp1[i, (end-2):end]), c(0,0,0), resp1[i,(end-2):end])
+  }
+  return(resp1)}
+changeD0 <- function(m0, s, end){
+  m0 <- as.data.frame(m0)
+for (i in 1:n0) {
+  if (resp0[i,4] == 1) {
+    if (length(m0[m0$AdmissionType == 1, 2])==0) m01 = NA
+    else{m01 = m0[m0$AdmissionType == 1, 2]}
+    resp0[i,s:(s+2)] = ifelse(is.na(resp0[i,s]), m01, resp0[i,s:(s+2)])
+  }
+  if (resp0[i,4] == 2) {
+    if (length(m0[m0$AdmissionType == 2, 2])==0) m02 = NA
+    else{m02 = m0[m0$AdmissionType == 2, 2]}
+    resp0[i,s:(s+2)] = ifelse(is.na(resp0[i,s]), m02, resp0[i,s:(s+2)])
+  }
+  if (resp0[i,4] == 3) {
+    if (length(m0[m0$AdmissionType == 3, 2])==0) m03 = NA
+    else{m03 = m0[m0$AdmissionType == 3, 2]}
+    resp0[i,s:(s+2)] = ifelse(is.na(resp0[i,s]), m03, resp0[i,s:(s+2)])
+  }
+  if (resp0[i,4] == 4) {
+    if (length(m0[m0$AdmissionType == 4, 2])==0) m04 = NA
+    else{m04 = m0[m0$AdmissionType == 4, 2]}
+    resp0[i,s:(s+2)] = ifelse(is.na(resp0[i,s]), m04, resp0[i,s:(s+2)])
+  }
+  resp0[i, (end-2):end] = ifelse(is.na(resp0[i, (end-2):end]), c(0,0,0), resp0[i,(end-2):end])
+}
+  return(resp0)
+}
+```
+
+## ALP:
+
+```{r}
+alpstable1 <- resp1[,1:10] %>% filter(ALP_numTest == 1)
+alpstable0 <- resp0[,1:10] %>% filter(ALP_numTest == 1)
+m0 <- alpstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(ALP_mean))
+m1 <- alpstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(ALP_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,5,10)
+resp0 = changeD0(m0,5,10)
+```
+
+
+## ALT:
+
+```{r}
+ALTstable1 <- resp1[,c(1:4,11:16)] %>% filter(ALT_numTest == 1)
+ALTstable0 <- resp0[,c(1:4,11:16)] %>% filter(ALT_numTest == 1)
+m0 <- ALTstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(ALT_mean))
+m1 <- ALTstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(ALT_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,11,16)
+resp0 = changeD0(m0,11,16)
+```
+
+## AST:
+
+```{r}
+ASTstable1 <- resp1[,c(1:4,17:22)] %>% filter(AST_numTest == 1)
+ASTstable0 <- resp0[,c(1:4,17:22)] %>% filter(AST_numTest == 1)
+m0 <- ASTstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(AST_mean))
+m1 <- ASTstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(AST_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,17,22)
+resp0 = changeD0(m0,17,22)
+```
+
+
+## Albumin:
+
+```{r}
+Albuminstable1 <- resp1[,c(1:4,23:28)] %>% filter(Albumin_numTest == 1)
+Albuminstable0 <- resp0[,c(1:4,23:28)] %>% filter(Albumin_numTest == 1)
+m0 <- Albuminstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Albumin_mean))
+m1 <- Albuminstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Albumin_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,23,28)
+resp0 = changeD0(m0,23,28)
+```
+
+
+## BUN:
+
+```{r}
+BUNstable1 <- resp1[,c(1:4,29:34)] %>% filter(BUN_numTest == 1)
+BUNstable0 <- resp0[,c(1:4,29:34)] %>% filter(BUN_numTest == 1)
+m0 <- BUNstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(BUN_mean))
+m1 <- BUNstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(BUN_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,29,34)
+resp0 = changeD0(m0,29,34)
+```
+
+
+## Bilirubin:
+
+```{r}
+Bilirubinstable1 <- resp1[,c(1:4,35:40)] %>% filter(Bilirubin_numTest == 1)
+Bilirubinstable0 <- resp0[,c(1:4,35:40)] %>% filter(Bilirubin_numTest == 1)
+m0 <- Bilirubinstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Bilirubin_mean))
+m1 <- Bilirubinstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Bilirubin_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,35,40)
+resp0 = changeD0(m0,35,40)
+```
+
+
+## Cholesterol:
+
+```{r}
+Cholesterolstable1 <- resp1[,c(1:4,41:46)] %>% filter(Cholesterol_numTest == 1)
+Cholesterolstable0 <- resp0[,c(1:4,41:46)] %>% filter(Cholesterol_numTest == 1)
+m0 <- Cholesterolstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Cholesterol_mean))
+m1 <- Cholesterolstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Cholesterol_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,41,46)
+resp0 = changeD0(m0,41,46)
+```
+
+
+## Creatinine:
+
+```{r}
+Creatininestable1 <- resp1[,c(1:4,47:52)] %>% filter(Creatinine_numTest == 1)
+Creatininestable0 <- resp0[,c(1:4,47:52)] %>% filter(Creatinine_numTest == 1)
+m0 <- Creatininestable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Creatinine_mean))
+m1 <- Creatininestable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Creatinine_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,47,52)
+resp0 = changeD0(m0,47,52)
+```
+
+
+## DiasABP:
+
+```{r}
+DiasABPstable1 <- resp1[,c(1:4,53:58)] %>% filter(DiasABP_numTest == 1)
+DiasABPstable0 <- resp0[,c(1:4,53:58)] %>% filter(DiasABP_numTest == 1)
+m0 <- DiasABPstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(DiasABP_mean))
+m1 <- DiasABPstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(DiasABP_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+m02 = resp0[,c(1:4,53:58)] %>% filter(AdmissionType==2, DiasABP_range <=40) %>% summarise(mean = mean(DiasABP_mean, na.rm=T))
+m04 = resp0[,c(1:4,53:58)] %>% filter(AdmissionType==4, DiasABP_range <=40) %>% summarise(mean = mean(DiasABP_mean, na.rm=T))
+m12 = resp1[,c(1:4,53:58)] %>% filter(AdmissionType==2, DiasABP_range <=40) %>% summarise(mean = mean(DiasABP_mean, na.rm=T))
+m0 = rbind(m0, c(2, as.numeric(m02[1])))
+m0 = rbind(m0, c(4, as.numeric(m04[1])))
+m1 = rbind(m1, c(2,as.numeric(m12[1])))
+resp1 = changeD1(m1,53,58)
+resp0 = changeD0(m0,53,58)
+```
+
+
+## FiO2:
+
+```{r}
+FiO2stable1 <- resp1[,c(1:4,59:64)] %>% filter(FiO2_numTest == 1)
+FiO2stable0 <- resp0[,c(1:4,59:64)] %>% filter(FiO2_numTest == 1)
+m0 <- FiO2stable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(FiO2_mean))
+m1 <- FiO2stable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(FiO2_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+m01 = resp0[,c(1:4,59:64)] %>% filter(AdmissionType == 1, FiO2_range <= 0.5) %>% summarise(mean = mean(FiO2_mean, na.rm = T))
+m0 = rbind(m0, c(1, as.numeric(m01[1])))
+resp1 = changeD1(m1,59,64)
+resp0 = changeD0(m0,59,64)
+```
+
+
+## GCS:
+
+```{r, warning=T}
+GCSstable1 <- resp1[,c(1:4,65:70)] %>% filter(GCS_range <= 3)
+GCSstable0 <- resp0[,c(1:4,65:70)] %>% filter(GCS_range <= 3)
+m0 <- GCSstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(GCS_mean))
+m1 <- GCSstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(GCS_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,65,70)
+resp0 = changeD0(m0,65,70)
+```
+
+
+## Glucose:
+
+```{r}
+Glucosestable1 <- resp1[,c(1:4,71:76)] %>% filter(Glucose_numTest == 1)
+Glucosestable0 <- resp0[,c(1:4,71:76)] %>% filter(Glucose_numTest == 1)
+m0 <- Glucosestable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Glucose_mean))
+m1 <- Glucosestable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Glucose_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,71,76)
+resp0 = changeD0(m0,71,76)
+```
+
+
+## HCO3:
+
+```{r}
+HCO3stable1 <- resp1[,c(1:4,77:82)] %>% filter(HCO3_numTest == 1)
+HCO3stable0 <- resp0[,c(1:4,77:82)] %>% filter(HCO3_numTest == 1)
+m0 <- HCO3stable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(HCO3_mean))
+m1 <- HCO3stable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(HCO3_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,77,82)
+resp0 = changeD0(m0,77,82)
+```
+
+
+## HCT:
+
+```{r}
+HCTstable1 <- resp1[,c(1:4,83:88)] %>% filter(HCT_numTest == 1)
+HCTstable0 <- resp0[,c(1:4,83:88)] %>% filter(HCT_numTest == 1)
+m0 <- HCTstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(HCT_mean))
+m1 <- HCTstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(HCT_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,83,88)
+resp0 = changeD0(m0,83,88)
+```
+
+
+## HR:
+
+```{r}
+HRstable1 <- resp1[,c(1:4,89:94)] %>% filter(HR_range <= 37)
+HRstable0 <- resp0[,c(1:4,89:94)] %>% filter(HR_range <= 37)
+m0 <- HRstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(HR_mean))
+m1 <- HRstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(HR_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,89,94)
+resp0 = changeD0(m0,89,94)
+```
+
+
+## K:
+
+```{r}
+Kstable1 <- resp1[,c(1:4,95:100)] %>% filter(K_numTest == 1)
+Kstable0 <- resp0[,c(1:4,95:100)] %>% filter(K_numTest == 1)
+m0 <- Kstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(K_mean))
+m1 <- Kstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(K_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,95,100)
+resp0 = changeD0(m0,95,100)
+```
+
+
+## Lactate:
+
+```{r}
+Lactatestable1 <- resp1[,c(1:4,101:106)] %>% filter(Lactate_numTest == 1)
+Lactatestable0 <- resp0[,c(1:4,101:106)] %>% filter(Lactate_numTest == 1)
+m0 <- Lactatestable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Lactate_mean))
+m1 <- Lactatestable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Lactate_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,101,106)
+resp0 = changeD0(m0,101,106)
+```
+
+
+## MAP:
+
+```{r}
+MAPstable1 <- resp1[,c(1:4,107:112)] %>% filter(MAP_numTest == 1)
+MAPstable0 <- resp0[,c(1:4,107:112)] %>% filter(MAP_numTest == 1)
+m0 <- MAPstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(MAP_mean))
+m1 <- MAPstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(MAP_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+m02 = resp0[,c(1:4,107:112)] %>% filter(AdmissionType == 2, MAP_range <=40) %>% summarise(mean = mean(MAP_mean, na.rm=T))
+m04 = resp0[,c(1:4,107:112)] %>% filter(AdmissionType == 4, MAP_range <=40) %>% summarise(mean = mean(MAP_mean, na.rm=T))
+m0 = rbind(m0, c(2, as.numeric(m02[1])))
+m0 = rbind(m0, c(4, as.numeric(m04[1])))
+m12 = resp1[,c(1:4,107:112)] %>% filter(AdmissionType == 2, MAP_range <= 40) %>% summarise(mean = mean(MAP_mean, na.rm=T))
+m1 = rbind(m1, c(2, as.numeric(m12[1])))
+m14 = resp1[,c(1:4,107:112)] %>% filter(AdmissionType == 4, MAP_range <= 40) %>% summarise(mean = mean(MAP_mean, na.rm=T))
+m1 = rbind(m1, c(4, as.numeric(m14[1])))
+resp1 = changeD1(m1,107,112)
+resp0 = changeD0(m0,107,112)
+```
+
+
+## MechVent:
+
+```{r}
+MechVentstable1 <- resp1[,c(1:4,113:118)] %>% filter(MechVent_numTest == 1)
+MechVentstable0 <- resp0[,c(1:4,113:118)] %>% filter(MechVent_numTest == 1)
+m0 <- MechVentstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(MechVent_mean))
+m1 <- MechVentstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(MechVent_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+m04 = resp0[,c(1:4,113:118)] %>% filter(AdmissionType == 4, MechVent_range <= .5) %>%summarise(mean = mean(MechVent_mean, na.rm=T))
+m0 = rbind(m0, c(4, as.numeric(m04[1])))
+resp1 = changeD1(m1,113,118)
+resp0 = changeD0(m0,113,118)
+```
+
+
+## Mg:
+
+```{r}
+Mgstable1 <- resp1[,c(1:4,119:124)] %>% filter(Mg_numTest == 1)
+Mgstable0 <- resp0[,c(1:4,119:124)] %>% filter(Mg_numTest == 1)
+m0 <- Mgstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Mg_mean))
+m1 <- Mgstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Mg_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,119,124)
+resp0 = changeD0(m0,119,124)
+```
+
+
+## NIDiasABP:
+
+```{r}
+NIDiasABPstable1 <- resp1[,c(1:4,125:130)] %>% filter(NIDiasABP_numTest == 1)
+NIDiasABPstable0 <- resp0[,c(1:4,125:130)] %>% filter(NIDiasABP_numTest == 1)
+m0 <- NIDiasABPstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(NIDiasABP_mean))
+m1 <- NIDiasABPstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(NIDiasABP_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,125,130)
+resp0 = changeD0(m0,125,130)
+```
+
+
+## NIMAP:
+
+```{r}
+NIMAPstable1 <- resp1[,c(1:4,131:136)] %>% filter(NIMAP_numTest == 1)
+NIMAPstable0 <- resp0[,c(1:4,131:136)] %>% filter(NIMAP_numTest == 1)
+m0 <- NIMAPstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(NIMAP_mean))
+m1 <- NIMAPstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(NIMAP_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,131,136)
+resp0 = changeD0(m0,131,136)
+```
+
+
+## NISysABP:
+
+```{r}
+NISysABPstable1 <- resp1[,c(1:4,137:142)] %>% filter(NISysABP_numTest == 1)
+NISysABPstable0 <- resp0[,c(1:4,137:142)] %>% filter(NISysABP_numTest == 1)
+m0 <- NISysABPstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(NISysABP_mean))
+m1 <- NISysABPstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(NISysABP_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,137,142)
+resp0 = changeD0(m0,137,142)
+```
+
+
+## Na:
+
+```{r}
+Nastable1 <- resp1[,c(1:4,143:148)] %>% filter(Na_numTest == 1)
+Nastable0 <- resp0[,c(1:4,143:148)] %>% filter(Na_numTest == 1)
+m0 <- Nastable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Na_mean))
+m1 <- Nastable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Na_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,143,148)
+resp0 = changeD0(m0,143,148)
+```
+
+
+## PaCO2:
+
+```{r}
+PaCO2stable1 <- resp1[,c(1:4,149:154)] %>% filter(PaCO2_numTest == 1)
+PaCO2stable0 <- resp0[,c(1:4,149:154)] %>% filter(PaCO2_numTest == 1)
+m0 <- PaCO2stable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(PaCO2_mean))
+m1 <- PaCO2stable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(PaCO2_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,149,154)
+resp0 = changeD0(m0,149,154)
+```
+
+
+## PaO2:
+
+```{r}
+PaO2stable1 <- resp1[,c(1:4,155:160)] %>% filter(PaO2_numTest == 1)
+PaO2stable0 <- resp0[,c(1:4,155:160)] %>% filter(PaO2_numTest == 1)
+m0 <- PaO2stable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(PaO2_mean))
+m1 <- PaO2stable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(PaO2_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,155,160)
+resp0 = changeD0(m0,155,160)
+```
+
+
+## Platelets:
+
+```{r}
+Plateletsstable1 <- resp1[,c(1:4,161:166)] %>% filter(Platelets_numTest == 1)
+Plateletsstable0 <- resp0[,c(1:4,161:166)] %>% filter(Platelets_numTest == 1)
+m0 <- Plateletsstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Platelets_mean))
+m1 <- Plateletsstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Platelets_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,161,166)
+resp0 = changeD0(m0,161,166)
+```
+
+
+## RespRate:
+
+```{r}
+RespRatestable1 <- resp1[,c(1:4,167:172)] %>% filter(RespRate_range <= 13)
+RespRatestable0 <- resp0[,c(1:4,167:172)] %>% filter(RespRate_range <= 13)
+m0 <- RespRatestable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(RespRate_mean))
+m1 <- RespRatestable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(RespRate_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,167,172)
+resp0 = changeD0(m0,167,172)
+```
+
+
+## SAPS:
+
+```{r}
+SAPSstable1 <- resp1[,c(1:4,173:178)] %>% filter(SAPS_numTest == 1)
+SAPSstable0 <- resp0[,c(1:4,173:178)] %>% filter(SAPS_numTest == 1)
+m0 <- SAPSstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(SAPS_mean))
+m1 <- SAPSstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(SAPS_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,173,178)
+resp0 = changeD0(m0,173,178)
+```
+
+
+## SaO2:
+
+```{r}
+SaO2stable1 <- resp1[,c(1:4,179:184)] %>% filter(SaO2_numTest == 1)
+SaO2stable0 <- resp0[,c(1:4,179:184)] %>% filter(SaO2_numTest == 1)
+m0 <- SaO2stable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(SaO2_mean))
+m1 <- SaO2stable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(SaO2_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,179,184)
+resp0 = changeD0(m0,179,184)
+```
+
+
+## SysABP:
+
+```{r}
+SysABPstable1 <- resp1[,c(1:4,185:190)] %>% filter(SysABP_numTest == 1)
+SysABPstable0 <- resp0[,c(1:4,185:190)] %>% filter(SysABP_numTest == 1)
+m0 <- SysABPstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(SysABP_mean))
+m1 <- SysABPstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(SysABP_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+m02 = resp0[,c(1:4,185:190)] %>% filter(AdmissionType == 2, SysABP_range <=60) %>% summarise(mean = mean(SysABP_mean, na.rm=T))
+m04 = resp0[,c(1:4,185:190)] %>% filter(AdmissionType == 4, SysABP_range <=60) %>% summarise(mean = mean(SysABP_mean, na.rm=T))
+m0 = rbind(m0, c(2, as.numeric(m02[1])))
+m0 = rbind(m0, c(4, as.numeric(m04[1])))
+m12 = resp1[,c(1:4,185:190)] %>% filter(AdmissionType == 2, SysABP_range <=60) %>% summarise(mean = mean(SysABP_mean, na.rm=T))
+m1 = rbind(m1, c(2, as.numeric(m12[1])))
+resp1 = changeD1(m1,185,190)
+resp0 = changeD0(m0,185,190)
+```
+
+
+## Temp:
+
+```{r}
+Tempstable1 <- resp1[,c(1:4,191:196)] %>% filter(Temp_range <= 1.5)
+Tempstable0 <- resp0[,c(1:4,191:196)] %>% filter(Temp_range <= 1.5)
+m0 <- Tempstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Temp_mean))
+m1 <- Tempstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Temp_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,191,196)
+resp0 = changeD0(m0,191,196)
+```
+
+
+## TroponinI:
+
+```{r}
+TroponinIstable1 <- resp1[,c(1:4,197:202)] %>% filter(TroponinI_numTest == 1)
+TroponinIstable0 <- resp0[,c(1:4,197:202)] %>% filter(TroponinI_numTest == 1)
+m0 <- TroponinIstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(TroponinI_mean))
+m1 <- TroponinIstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(TroponinI_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+m02 = resp0[,c(1:4,197:202)] %>% filter(AdmissionType == 2) %>% summarise(mean = mean(TroponinI_mean, na.rm = T))
+m0 = rbind(m0, c(2, as.numeric(m02[1])))
+resp1 = changeD1(m1,197,202)
+resp0 = changeD0(m0,197,202)
+```
+
+
+## TroponinT:
+
+```{r}
+TroponinTstable1 <- resp1[,c(1:4,203:208)] %>% filter(TroponinT_numTest == 1)
+TroponinTstable0 <- resp0[,c(1:4,203:208)] %>% filter(TroponinT_numTest == 1)
+m0 <- TroponinTstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(TroponinT_mean))
+m1 <- TroponinTstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(TroponinT_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,203,208)
+resp0 = changeD0(m0,203,208)
+```
+
+
+## Urine:
+
+```{r}
+Urinestable1 <- resp1[,c(1:4,209:214)] %>% filter(Urine_range <= 400)
+Urinestable0 <- resp0[,c(1:4,209:214)] %>% filter(Urine_range <= 400)
+m0 <- Urinestable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(Urine_mean))
+m1 <- Urinestable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(Urine_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,209,214)
+resp0 = changeD0(m0,209,214)
+```
+
+
+## WBC:
+
+```{r}
+WBCstable1 <- resp1[,c(1:4,215:220)] %>% filter(WBC_numTest == 1)
+WBCstable0 <- resp0[,c(1:4,215:220)] %>% filter(WBC_numTest == 1)
+m0 <- WBCstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(WBC_mean))
+m1 <- WBCstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(WBC_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,215,220)
+resp0 = changeD0(m0,215,220)
+```
+
+
+## noLabel:
+
+```{r}
+noLabelstable1 <- resp1[,c(1:4,221:226)] %>% filter(noLabel_numTest == 1)
+noLabelstable0 <- resp0[,c(1:4,221:226)] %>% filter(noLabel_numTest == 1)
+m0 <- noLabelstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(noLabel_mean))
+m1 <- noLabelstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(noLabel_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,221,226)
+resp0 = changeD0(m0,221,226)
+```
+
+
+## pH:
+
+```{r}
+pHstable1 <- resp1[,c(1:4,227:232)] %>% filter(pH_numTest == 1)
+pHstable0 <- resp0[,c(1:4,227:232)] %>% filter(pH_numTest == 1)
+m0 <- pHstable0 %>% group_by(AdmissionType) %>% summarise(mean = mean(pH_mean))
+m1 <- pHstable1 %>% group_by(AdmissionType) %>% summarise(mean = mean(pH_mean))
+n1 <- dim(resp1)[1]
+n0 <- dim(resp0)[1]
+resp1 = changeD1(m1,227,232)
+resp0 = changeD0(m0,227,232)
+```
+
+
+```{r}
+testdata <- rbind(resp1, resp0)
+write.csv(testdata, "~/Desktop/DataChallenge/Test Set for trainData.csv", row.names = F)
+```
+
+
+
+
