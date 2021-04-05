@@ -6,3 +6,7 @@
 `Training set for trainData.csv` is the training dataset for trainData, it has 4962 observations, which is 70% of the trainData. There is no NA value as the data imputation is applied. I first splited the training set into two groups by outcome, then for each group filter by AdmissionType and numTest = 1, and calculate the mean of the test_mean, which is used to replace the NA values. Some of the tests do not have observations that numTest = 1, then use the range <= median of test_range as limitation to filter the data. For example, the RespRate does not have observation such that numTest = 1 for some AdmissionType, so instead of being filtered by AdmissionType and numTest =1 it is filtered by AdmissionType and range <= 13, as the median value of RespRate_range is around 13. 
 
 `Test set for trainData.csv` is the test set for trainData, it has 2127 observations, which is 30% of the trainData. Using the same way described above to perform data imputation. 
+
+`trainData_imputed_outcome.csv` is the training dataset for trainData (70% split). After split, dataset is sorted by outcome only. Within the same outcome result group, NA values for (mean, max, min) are calculated by median of present values // (range, StoF, numTest) are imputed as zero.
+
+`testData_imputed_outcome.csv` shares same manner with the traindata.
