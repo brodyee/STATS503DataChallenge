@@ -32,58 +32,60 @@ overallData <- merge(response, overallData, by.x = "RecordID")
 
 ### split train & test data
 ```{r message = FALSE, echo = FALSE, warning = FALSE}
-set.seed(1)
-num = dim(overallData)[1]
-id.train = sample(seq(1, num), size = num * 0.7)
-trainData = overallData[id.train, ]
-testData = overallData[-id.train, ]
+trainId <- read.csv("C:\\Users\\Jiwoong Kang\\Desktop\\Stats 503\\data challenge\\trainInd.txt")
+trainId = trainId$X4102
+  # set.seed(1)
+  # num = dim(overallData)[1]
+  # id.train = sample(seq(1, num), size = num * 0.7)
+trainData = overallData[trainId, ]
+testData = overallData[-trainId, ]
 ```
 
 ### filling missing values for train set
 ```{r message = FALSE, echo = FALSE, warning = FALSE}
-trainData_admission_0 = subset(trainData, outcome == "recovered")
-trainData_admission_1 = subset(trainData, outcome == "notRecovered")
+trainData_recover = subset(trainData, outcome == "recovered")
+trainData_notRecover = subset(trainData, outcome == "notRecovered")
 
 # filling_median <- c("mean")
 # filling_zero <- c("range","numTest","changeStoF")
 for (i in 6:dim(trainData)[2]){
   
   if (grepl("mean", colnames(trainData)[i])){
-      trainData_admission_0[is.na(trainData_admission_0[,i]),c(i,i+1,i+2)] = median(trainData_admission_0[!is.na(trainData_admission_0[,i]),i])
-      trainData_admission_1[is.na(trainData_admission_1[,i]),c(i,i+1,i+2)] = median(trainData_admission_1[!is.na(trainData_admission_1[,i]),i])
+      trainData_recover[is.na(trainData_recover[,i]),c(i,i+1,i+2)] = median(trainData_recover[!is.na(trainData_recover[,i]),i])
+      trainData_notRecover[is.na(trainData_notRecover[,i]),c(i,i+1,i+2)] = median(trainData_recover[!is.na(trainData_recover[,i]),i])
 
   } else if (grepl("range", colnames(trainData)[i])| grepl("numTest", colnames(trainData)[i]) | grepl("changeStoF", colnames(trainData)[i])) {
-      trainData_admission_0[is.na(trainData_admission_0[,i]),i] =0
-      trainData_admission_1[is.na(trainData_admission_1[,i]),i] =0
+      trainData_recover[is.na(trainData_recover[,i]),i] =0
+      trainData_notRecover[is.na(trainData_notRecover[,i]),i] =0
   }
 
 }
 
-trainData <- full_join(trainData_admission_0, trainData_admission_1)
+trainData <- full_join(trainData_recover, trainData_notRecover)
 ```
 
 
 ### filling missing values for test set
 ```{r message = FALSE, echo = FALSE, warning = FALSE}
-testData_admission_0 = subset(testData, outcome == "recovered")
-testData_admission_1 = subset(testData, outcome == "notRecovered")
+trainData_recover = subset(testData, outcome == "recovered")
+trainData_notRecover = subset(testData, outcome == "notRecovered")
 
 # filling_median <- c("mean")
 # filling_zero <- c("range","numTest","changeStoF")
 for (i in 6:dim(testData)[2]){
   
   if (grepl("mean", colnames(testData)[i])){
-      testData_admission_0[is.na(testData_admission_0[,i]),c(i,i+1,i+2)] = median(testData_admission_0[!is.na(testData_admission_0[,i]),i])
-      testData_admission_1[is.na(testData_admission_1[,i]),c(i,i+1,i+2)] = median(testData_admission_1[!is.na(testData_admission_1[,i]),i])
+      trainData_recover[is.na(trainData_recover[,i]),c(i,i+1,i+2)] = median(trainData_recover[!is.na(trainData_recover[,i]),i])
+      trainData_notRecover[is.na(trainData_notRecover[,i]),c(i,i+1,i+2)] = median(trainData_recover[!is.na(trainData_recover[,i]),i])
 
   } else if (grepl("range", colnames(trainData)[i])| grepl("numTest", colnames(trainData)[i]) | grepl("changeStoF", colnames(trainData)[i])) {
-      testData_admission_0[is.na(testData_admission_0[,i]),i] =0
-      testData_admission_1[is.na(testData_admission_1[,i]),i] =0
+      trainData_recover[is.na(trainData_recover[,i]),i] =0
+      trainData_notRecover[is.na(trainData_notRecover[,i]),i] =0
   }
 
 }
 
-testData <- full_join(testData_admission_0, testData_admission_1)
+testData <- full_join(trainData_recover, trainData_notRecover)
 ```
 
 ```{r}
