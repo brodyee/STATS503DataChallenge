@@ -10,3 +10,7 @@
 `trainData_imputed_outcome.csv` is the training dataset for trainData (70% split). After split, dataset is sorted by outcome only. Within the same outcome result group, NA values for (mean, max, min) are calculated by median of present values // (range, StoF, numTest) are imputed as zero.
 
 `testData_imputed_outcome.csv` shares same manner with the traindata.
+
+`Training set(Outcome=0).csv`  and `Test set(Outcome=0).csv` are the imputed datasets. The train.id used the id given in `trainInd.txt`. Only use the recovered observation to calculate the mean of each test_mean based on the AdmissionType, then replaced the NA values by the calculated mean based on AdmissionType.
+
+`Training set.csv` and `Test set.csv`: only use AdmissionType and numTest = 1 to filter the data, then calculate the mean of the test_mean after filtering. Replace the NA values with the calculated mean based on the AdmissionType. For the tests that do not have enough observations satisfy numTest=1, using test_range <= median(test_range) instead. 
