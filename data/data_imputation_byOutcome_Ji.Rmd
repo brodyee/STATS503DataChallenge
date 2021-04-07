@@ -67,20 +67,20 @@ trainData <- full_join(trainData_recover, trainData_notRecover)
 
 ### filling missing values for test set
 ```{r message = FALSE, echo = FALSE, warning = FALSE}
-trainData_recover = subset(testData, outcome == "recovered")
-trainData_notRecover = subset(testData, outcome == "notRecovered")
+testData_recover = subset(testData, outcome == "recovered")
+testData_notRecover = subset(testData, outcome == "notRecovered")
 
 # filling_median <- c("mean")
 # filling_zero <- c("range","numTest","changeStoF")
 for (i in 6:dim(testData)[2]){
   
   if (grepl("mean", colnames(testData)[i])){
-      trainData_recover[is.na(trainData_recover[,i]),c(i,i+1,i+2)] = median(trainData_recover[!is.na(trainData_recover[,i]),i])
-      trainData_notRecover[is.na(trainData_notRecover[,i]),c(i,i+1,i+2)] = median(trainData_recover[!is.na(trainData_recover[,i]),i])
+      testData_recover[is.na(testData_recover[,i]),c(i,i+1,i+2)] = median(trainData_recover[!is.na(trainData_recover[,i]),i])
+      testData_notRecover[is.na(testData_notRecover[,i]),c(i,i+1,i+2)] = median(trainData_recover[!is.na(trainData_recover[,i]),i])
 
-  } else if (grepl("range", colnames(trainData)[i])| grepl("numTest", colnames(trainData)[i]) | grepl("changeStoF", colnames(trainData)[i])) {
-      trainData_recover[is.na(trainData_recover[,i]),i] =0
-      trainData_notRecover[is.na(trainData_notRecover[,i]),i] =0
+  } else if (grepl("range", colnames(testData)[i])| grepl("numTest", colnames(testData)[i]) | grepl("changeStoF", colnames(testData)[i])) {
+      testData_recover[is.na(testData_recover[,i]),i] =0
+      testData_notRecover[is.na(testData_notRecover[,i]),i] =0
   }
 
 }
