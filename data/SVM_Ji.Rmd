@@ -1,0 +1,115 @@
+---
+output: pdf_document
+---
+# Data challenge
+Group members. Brody Erlandson, Entong Li, Jiwoong Kang
+
+### load package & imputed data
+```{r results = FALSE, message = FALSE, echo = FALSE, warning = FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(GGally)
+library(class)
+library(e1071)
+
+trainData <- read.csv("C:\\Users\\Jiwoong Kang\\Desktop\\Stats 503\\data challenge\\final_data\\trainData_onlyOutcome0.csv")
+testData <- read.csv("C:\\Users\\Jiwoong Kang\\Desktop\\Stats 503\\data challenge\\final_data\\testData_onlyOutcome0.csv")
+
+# trainData_x = trainData %>% select(-c("outcome"))
+# trainData_y = trainData %>% select(c("outcome"))
+#
+# testData_x = testData %>% select(-c("outcome"))
+# testData_y = testData %>% select(c("outcome"))
+trainData = trainData %>% select(-c("RecordID", "X"))
+trainData$outcome = as.factor(trainData$outcome)
+# trainData[,c("outcome","Gender","AdmissionType")] = as.factor(trainData[,c("outcome","Gender","AdmissionType")])
+
+testData$outcome = as.factor(testData$outcome)
+testData = testData %>% select(-c("RecordID", "X"))
+# testData[,c("outcome","Gender","AdmissionType")] = as.factor(testData[,c("outcome","Gender","AdmissionType")])
+
+trainData_copy = trainData
+trainData[2] = scale(trainData[2])
+trainData[5:dim(trainData)[2]] = scale(trainData[5:dim(trainData)[2]])
+
+testData[2] = scale(testData[2])
+testData[5:dim(testData)[2]] = scale(testData[5:dim(testData)[2]])
+# trainData[2,5:dim(testData)[2]] = scale(trainData[2,5:dim(testData)[2]])
+# testData[2] = scale(testData[2])
+# SAPS range & StoF returns NaN
+# rapply( trainData, f=function(x) ifelse(is.nan(x),0,x), how="replace" )
+trainData[is.na(trainData)] = 0
+testData[is.na(testData)] = 0
+```
+
+### sample SVM
+```{r message = FALSE, echo = FALSE, warning = FALSE}
+# svmfit = svm(outcome ~ ., data=trainData,kernel="radial", gamma=1, cost=1, scale=FALSE)
+# 
+# test_pred = predict(svmfit, newdata = testData[-1])
+# test_accuracy = sum(test_pred == testData$outcome)/length(test_pred)
+# test_accuracy
+# 
+# cm = table(testData[,1],test_pred)
+# cm
+```
+
+
+### kernal SVM - radial
+```{r message = FALSE, echo = FALSE, warning = FALSE}
+# tune.out =tune(svm,outcome ~ .,data=trainData,tunecontrol=tune.control(cross=5),ranges=list(cost=c(1,10,100,1000), kernel=c("radial")))
+# 
+# df_results = tune.out$performances
+# df_results[order(df_results$error),][1:3,]
+# 
+# test_pred = predict(tune.out$best.model, newdata = testData)
+# test_accuracy = sum(test_pred == testData$outcome)/length(test_pred)
+# test_accuracy
+```
+
+### kernal SVM - poly
+```{r results = FALSE, message = FALSE, echo = FALSE, warning = FALSE}
+# tune.out =tune(svm,outcome ~ .,data=trainData,tunecontrol=tune.control(cross=5),ranges=list(cost=c(1,10,100,1000), degree=c(1,2,3), kernel=c("polynomial")))
+# 
+# df_results = tune.out$performances
+# df_results[order(df_results$error),][1:10,]
+# 
+# test_pred = predict(tune.out$best.model, newdata = testData)
+# test_accuracy = sum(test_pred == testData$outcome)/length(test_pred)
+# test_accuracy
+```
+
+
+### kernal SVM - radial
+```{r message = FALSE, echo = FALSE, warning = FALSE}
+tune.out =tune(svm,outcome ~ .,data=trainData,tunecontrol=tune.control(cross=5),ranges=list(cost=c(1,10,100,1000), gamma=c(0.0001,0.001,0.01,0.1), kernel=c("radial")))
+
+df_results = tune.out$performances
+df_results[order(df_results$error),][1:3,]
+
+test_pred = predict(tune.out$best.model, newdata = testData)
+test_accuracy = sum(test_pred == testData$outcome)/length(test_pred)
+test_accuracy
+```
+
+### kernal SVM - poly
+```{r message = FALSE, echo = FALSE, warning = FALSE}
+tune.out =tune(svm,outcome ~ .,data=trainData,tunecontrol=tune.control(cross=5),ranges=list(cost=c(1,10,100,1000), gamma=c(0.0001,0.001,0.01,0.1), degree=c(1,2,3), kernel=c("polynomial")))
+
+df_results = tune.out$performances
+df_results[order(df_results$error),][1:3,]
+
+test_pred = predict(tune.out$best.model, newdata = testData)
+test_accuracy = sum(test_pred == testData$outcome)/length(test_pred)
+test_accuracy
+```
+
+
+
+
+
+
+
+
+
