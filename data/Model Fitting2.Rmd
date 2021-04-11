@@ -1,0 +1,376 @@
+---
+title: "Model Fitting2"
+author: "Entong Li"
+date: "4/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+library(gbm)
+library(ROCR)
+library(Metrics)
+library(tidyverse)
+train <- read.csv("~/Desktop/github/STATS503DataChallenge/data/BrodysImpute_Age_Outcome_Gender-trainSet.csv", header = T)
+test <- read.csv("~/Desktop/github/STATS503DataChallenge/data/BrodysImpute_Age_Outcome_Gender-testSet.csv",header = T)
+response <- read.csv("train_outcome.csv",header = T)
+train = merge(train, response, by.x = "RecordID",by.y = "id")
+test = merge(test, response,by.x = "RecordID", by.y = "id")
+test$outcome <- factor(test$outcome)
+levels(test$outcome) = c("Recover","No-recover")
+train$outcome <- factor(train$outcome)
+levels(train$outcome) = c("Recover","No-recover")
+train = train[,-1]
+test = test[,-1]
+```
+
+
+
+
+## RF:
+
+```{r}
+set.seed(1)
+train.t1 = train%>%filter(AdmissionType == 1)
+train.t2 = train%>%filter(AdmissionType == 2)
+train.t3 = train%>%filter(AdmissionType == 3)
+train.t4 = train%>%filter(AdmissionType == 4)
+test.t1 = test%>%filter(AdmissionType == 1)
+test.t2 = test%>%filter(AdmissionType == 2)
+test.t3 = test%>%filter(AdmissionType == 3)
+test.t4 = test%>%filter(AdmissionType == 4)
+rf_out1 = randomForest(outcome ~ ., data = train.t1, mtry = floor(sqrt(ncol(train.t1)-1)),
+                       importance = TRUE)
+rf_test_pred = predict(rf_out1, newdata = test.t1)
+rf_test_err = mean(rf_test_pred!=test.t1$outcome)
+rf_test_err
+pr1 <- prediction(as.numeric(rf_test_pred), as.numeric(test.t1$outcome))
+auc1 = performance(pr1, "auc")
+auc1@y.name
+auc1@y.values
+rf_out2 = randomForest(outcome ~ ., data = train.t2, mtry = floor(sqrt(ncol(train.t2)-1)),
+                       importance = TRUE)
+rf_test_pred = predict(rf_out2, newdata = test.t2)
+rf_test_err = mean(rf_test_pred!=test.t2$outcome)
+rf_test_err
+pr2 <- prediction(as.numeric(rf_test_pred), as.numeric(test.t2$outcome))
+auc2 = performance(pr2, "auc")
+auc2@y.name
+auc2@y.values
+rf_out3 = randomForest(outcome ~ ., data = train.t3, mtry = floor(sqrt(ncol(train.t3)-1)),
+                       importance = TRUE)
+rf_test_pred = predict(rf_out3, newdata = test.t3)
+rf_test_err = mean(rf_test_pred!=test.t3$outcome)
+rf_test_err
+pr3 <- prediction(as.numeric(rf_test_pred), as.numeric(test.t3$outcome))
+auc3 = performance(pr3, "auc")
+auc3@y.name
+auc3@y.values
+rf_out4 = randomForest(outcome ~ ., data = train.t4, mtry = floor(sqrt(ncol(train.t4)-1)),
+                       importance = TRUE)
+rf_test_pred = predict(rf_out4, newdata = test.t4)
+rf_test_err = mean(rf_test_pred!=test.t4$outcome)
+rf_test_err
+pr4 <- prediction(as.numeric(rf_test_pred), as.numeric(test.t4$outcome))
+auc4 = performance(pr4, "auc")
+auc4@y.name
+auc4@y.values
+rf_out = randomForest(outcome ~ ., data = train, mtry = floor(sqrt(ncol(train)-1)),
+                       importance = TRUE)
+rf_test_pred = predict(rf_out, newdata = test)
+rf_test_err = mean(rf_test_pred!=test$outcome)
+rf_test_err
+pr <- prediction(as.numeric(rf_test_pred), as.numeric(test$outcome))
+auc = performance(pr, "auc")
+auc@y.name
+auc@y.values
+```
+
+```{r, fig.height=6}
+import.dat = as.data.frame(importance(rf_out1))
+Accuracy.dat <- import.dat[with(import.dat,order(-MeanDecreaseAccuracy)),]
+obinA = rownames(Accuracy.dat)[1:150]
+Gini.dat <- import.dat[with(import.dat, order(-MeanDecreaseGini)),]
+obinG = rownames(Gini.dat)[1:150]
+bothAG1 = intersect(obinA, obinG)
+import.dat = as.data.frame(importance(rf_out2))
+Accuracy.dat <- import.dat[with(import.dat,order(-MeanDecreaseAccuracy)),]
+obinA = rownames(Accuracy.dat)[1:150]
+Gini.dat <- import.dat[with(import.dat, order(-MeanDecreaseGini)),]
+obinG = rownames(Gini.dat)[1:150]
+bothAG2 = intersect(obinA, obinG)
+import.dat = as.data.frame(importance(rf_out3))
+Accuracy.dat <- import.dat[with(import.dat,order(-MeanDecreaseAccuracy)),]
+obinA = rownames(Accuracy.dat)[1:150]
+Gini.dat <- import.dat[with(import.dat, order(-MeanDecreaseGini)),]
+obinG = rownames(Gini.dat)[1:150]
+bothAG3 = intersect(obinA, obinG)
+import.dat = as.data.frame(importance(rf_out4))
+Accuracy.dat <- import.dat[with(import.dat,order(-MeanDecreaseAccuracy)),]
+obinA = rownames(Accuracy.dat)[1:150]
+Gini.dat <- import.dat[with(import.dat, order(-MeanDecreaseGini)),]
+obinG = rownames(Gini.dat)[1:150]
+bothAG4 = intersect(obinA, obinG)
+```
+
+
+```{r}
+red.train1 <- train[,c(bothAG1,"outcome")]
+red.test1 <- test[,c(bothAG1,"outcome")]
+red.train2 <- train[,c(bothAG2,"outcome")]
+red.test2 <- test[,c(bothAG2,"outcome")]
+red.train3 <- train[,c(bothAG3,"outcome")]
+red.test3 <- test[,c(bothAG3,"outcome")]
+red.train4 <- train[,c(bothAG4,"outcome")]
+red.test4 <- test[,c(bothAG4,"outcome")]
+```
+
+
+```{r}
+set.seed(1)
+rf_out1 = randomForest(outcome ~ ., data = red.train1, mtry = floor(sqrt(ncol(red.train1)-1)),
+                       importance = TRUE)
+rf_test_pred = predict(rf_out1, newdata = red.test1)
+rf_test_err = mean(rf_test_pred!=red.test1$outcome)
+rf_test_err
+pr1 <- prediction(as.numeric(rf_test_pred), as.numeric(red.test1$outcome))
+auc1 = performance(pr1, "auc")
+auc1@y.name
+auc1@y.values
+rf_out2 = randomForest(outcome ~ ., data = red.train2, mtry = floor(sqrt(ncol(red.train2)-1)),
+                       importance = TRUE)
+rf_test_pred = predict(rf_out2, newdata = red.test2)
+rf_test_err = mean(rf_test_pred!=red.test2$outcome)
+rf_test_err
+pr2 <- prediction(as.numeric(rf_test_pred), as.numeric(red.test2$outcome))
+auc2 = performance(pr2, "auc")
+auc2@y.name
+auc2@y.values
+rf_out3 = randomForest(outcome ~ ., data = red.train3, mtry = floor(sqrt(ncol(red.train3)-1)),
+                       importance = TRUE)
+rf_test_pred = predict(rf_out3, newdata = red.test3)
+rf_test_err = mean(rf_test_pred!=red.test3$outcome)
+rf_test_err
+pr3 <- prediction(as.numeric(rf_test_pred), as.numeric(red.test3$outcome))
+auc3 = performance(pr3, "auc")
+auc3@y.name
+auc3@y.values
+rf_out4 = randomForest(outcome ~ ., data = red.train4, mtry = floor(sqrt(ncol(red.train4)-1)),
+                       importance = TRUE)
+rf_test_pred = predict(rf_out4, newdata = red.test4)
+rf_test_err = mean(rf_test_pred!=red.test4$outcome)
+rf_test_err
+pr4 <- prediction(as.numeric(rf_test_pred), as.numeric(red.test4$outcome))
+auc4 = performance(pr4, "auc")
+auc4@y.name
+auc4@y.values
+```
+
+
+```{r}
+set.seed(1)
+test_err = c()
+nodesize_list = seq(10, 70, 10)
+for (i in 1:length(nodesize_list))  {  
+  rf =randomForest(outcome ~., data = train, nodesize = nodesize_list[i], mtry=floor(sqrt(ncol(train)-1)))   
+  rf_test_pred =predict(rf, newdata = test)   
+  rf_test_err =mean(rf_test_pred!=test$outcome)   
+  test_err[i] =rf_test_err  
+  } 
+plot(nodesize_list, test_err, type="b",xlab="node size")
+```
+
+
+```{r}
+set.seed(1)
+test_err =c() 
+ntree_list =c(50,100,200,300,400) 
+for (i in 1:length(ntree_list)){   
+  rf =randomForest(outcome ~., data = red.train, ntree = ntree_list[i])   
+  rf_test_pred =predict(rf, newdata = red.test)   
+  rf_test_err =mean(rf_test_pred!=red.test$outcome)   
+  test_err[i] =rf_test_err  
+  } 
+plot(ntree_list, test_err, type="b",xlab="ntree")
+```
+
+
+
+
+```{r}
+set.seed(1)
+rf.best = randomForest(outcome ~., data = red.train, mtry=floor(sqrt(ncol(red.train)-1)), ntree = 300, nodesize = 30)
+rf_test_pred = predict(rf.best, newdata=red.test)
+mean(rf_test_pred!=red.test$outcome)
+pr <- prediction(as.numeric(rf_test_pred), as.numeric(test$outcome))
+auc = performance(pr, "auc")
+auc@y.name
+auc@y.values
+```
+
+
+# Boosting:
+
+```{r}
+set.seed(1)
+train$outcome = ifelse(train$outcome == "Recover",0,1)
+test$outcome = ifelse(test$outcome == "Recover",0,1)
+train.t1 = train%>%filter(AdmissionType == 1)
+train.t2 = train%>%filter(AdmissionType == 2)
+train.t3 = train%>%filter(AdmissionType == 3)
+train.t4 = train%>%filter(AdmissionType == 4)
+test.t1 = test%>%filter(AdmissionType == 1)
+test.t2 = test%>%filter(AdmissionType == 2)
+test.t3 = test%>%filter(AdmissionType == 3)
+test.t4 = test%>%filter(AdmissionType == 4)
+ada_out1 = gbm(outcome~., data = train.t1, distribution = "adaboost", n.trees = 1000,
+               interaction.depth = 10, shrinkage = 0.1)
+sada1 = summary(ada_out1)
+ada_out2 = gbm(outcome~., data = train.t2, distribution = "adaboost", n.trees = 1000,
+               interaction.depth = 10, shrinkage = 0.1)
+sada2 = summary(ada_out2)
+ada_out3 = gbm(outcome~., data = train.t3, distribution = "adaboost", n.trees = 1000,
+               interaction.depth = 10, shrinkage = 0.1)
+sada3 = summary(ada_out3)
+ada_out4 = gbm(outcome~., data = train.t4, distribution = "adaboost", n.trees = 1000,
+               interaction.depth = 10, shrinkage = 0.1)
+sada4 = summary(ada_out4)
+```
+
+
+```{r}
+ada_pred_response = predict(ada_out1, newdata = test.t1, n.trees =1000, type ="response")
+ada_pred =ifelse(ada_pred_response>0.7,1,0)
+mean(ada_pred!=test.t1$outcome)
+pr1 <- prediction(ada_pred, test.t1$outcome)
+auc1 = performance(pr1, "auc")
+auc1@y.name
+auc1@y.values
+ada_pred_response = predict(ada_out2, newdata = test.t2, n.trees =1000, type ="response")
+ada_pred =ifelse(ada_pred_response>0.7,1,0)
+mean(ada_pred!=test.t2$outcome)
+pr2 <- prediction(ada_pred, test.t2$outcome)
+auc2 = performance(pr2, "auc")
+auc2@y.name
+auc2@y.values
+ada_pred_response = predict(ada_out3, newdata = test.t3, n.trees =1000, type ="response")
+ada_pred =ifelse(ada_pred_response>0.7,1,0)
+mean(ada_pred!=test.t3$outcome)
+pr3 <- prediction(ada_pred, test.t3$outcome)
+auc3 = performance(pr3, "auc")
+auc3@y.name
+auc3@y.values
+ada_pred_response = predict(ada_out4, newdata = test.t4, n.trees =1000, type ="response")
+ada_pred =ifelse(ada_pred_response>0.7,1,0)
+mean(ada_pred!=test.t4$outcome)
+pr4 <- prediction(ada_pred, test.t4$outcome)
+auc4 = performance(pr4, "auc")
+auc4@y.name
+auc4@y.values
+```
+
+
+
+```{r}
+adavar = rownames(sada)[1:150]
+red.train = train[,c(adavar, "outcome")]
+red.test = test[,c(adavar, "outcome")]
+set.seed(1)
+ada_out = gbm(outcome~., data = red.train, distribution = "adaboost", n.trees = 1000,
+               interaction.depth = 10, shrinkage = 0.1)
+ada_pred_response = predict(ada_out, newdata = red.test, n.trees =1000, type ="response")
+ada_pred =ifelse(ada_pred_response>0.5,1,0)
+mean(ada_pred!=red.test$outcome)
+pr <- prediction(ada_pred, red.test$outcome)
+auc = performance(pr, "auc")
+auc@y.name
+auc@y.values
+```
+
+
+
+```{r}
+test_err1 =c()
+aucvalue1 = c()
+inter_list = 1:9
+set.seed(1)
+for (i in 1:length(inter_list)){   
+  ada =gbm(outcome ~., data = train, n.trees =1000, interaction.depth  =  inter_list[i], distribution="adaboost", shrinkage = 0.1)  
+  ada_pred_response =predict(ada, newdata = test, n.trees =1000, type ="response")   
+  ada_pred = ifelse(ada_pred_response >0.5,1,0)   
+  ada_err = mean(ada_pred!=test$outcome)   
+  test_err1[i] = ada_err
+  pr <- prediction(ada_pred, test$outcome)
+  auc = performance(pr, "auc")
+  aucvalue1[i] = auc@y.values
+  } 
+plot(inter_list, test_err1, type="b",xlab="interaction.depth")
+plot(inter_list, aucvalue1, type="b",xlab="interaction.depth")
+```
+
+
+
+```{r}
+test_err =c()
+aucvalue = c()
+set.seed(1)
+inter_list = 10:15
+for (i in 1:length(inter_list)){   
+  ada =gbm(outcome ~., data = train, n.trees =1000, interaction.depth  =  inter_list[i], distribution="adaboost", shrinkage = 0.1)  
+  ada_pred_response =predict(ada, newdata = test, n.trees =1000, type ="response")   
+  ada_pred =ifelse(ada_pred_response >0.5,1,0)   
+  ada_err =mean(ada_pred!=test$outcome)   
+  test_err[i] =ada_err
+  pr <- prediction(ada_pred, test$outcome)
+  auc = performance(pr, "auc")
+  aucvalue[i] = auc@y.values
+} 
+test_err = c(test_err1, test_err)
+aucvalue = c(aucvalue1, aucvalue)
+plot(1:15, test_err, type="b",xlab="interaction.depth")
+plot(1:15, aucvalue, type="b",xlab="interaction.depth")
+```
+
+
+```{r}
+test_err =c() 
+aucvalue = c()
+set.seed(1)
+shrinkage_list = c(1,0.5,0.1,0.01,0.001,1e-4)
+for (i in shrinkage_list){   
+  ada =gbm(outcome ~., data = train, n.trees =1000, interaction.depth  =  9, shrinkage = i, distribution="adaboost")  
+  ada_pred_response =predict(ada, newdata = test, n.trees =1000, type ="response")   
+  ada_pred =ifelse(ada_pred_response >0.5,1,0)   
+  ada_err =mean(ada_pred!=test$outcome)   
+  test_err = c(test_err,ada_err)
+  pr <- prediction(ada_pred, test$outcome)
+  auc = performance(pr, "auc")
+  aucvalue1[i] = auc@y.values
+  } 
+plot(log10(shrinkage_list), test_err, type="b",xlab="log10(shrinkage)")
+plot(log10(shrinkage_list), aucvalue, type="b",xlab="log10(shrinkage)")
+```
+
+
+
+```{r}
+set.seed(1)
+ada1 <- gbm(outcome ~., data = train, n.trees =1000, interaction.depth  =  9, distribution="adaboost", shrinkage = 0.1)
+ada2 <- gbm(outcome ~., data = train, n.trees =1000, interaction.depth  =  9, distribution="adaboost", shrinkage = 0.01)
+ada_pred_response1  =predict(ada1, newdata = test, n.trees =1000, type ="response")   
+ada_pred1 =ifelse(ada_pred_response1 >0.5,1,0)   
+mean(ada_pred1!=test$outcome)   
+pr <- prediction(ada_pred1, test$outcome)
+auc = performance(pr, "auc")
+auc@y.values
+ada_pred_response2  =predict(ada2, newdata = test, n.trees =1000, type ="response")   
+ada_pred2 =ifelse(ada_pred_response2 >0.5,1,0)   
+mean(ada_pred2!=test$outcome)   
+pr <- prediction(ada_pred2, test$outcome)
+auc = performance(pr, "auc")
+auc@y.values
+```
+
