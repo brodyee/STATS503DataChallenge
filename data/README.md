@@ -12,8 +12,8 @@
 
 ### Other three ways we used to do mean imputation:
 
-+ Mean inputation based on outcome, number of tests, and AdmissionType: only use the recovered and numTest=1 observations to calculate the mean of each test_mean based on the AdmissionType, then replaced the NA values by the calculated mean based on AdmissionType.
++ Mean inputation based on outcome, number of tests, and AdmissionType: only use the recovered and numTest=1 observations to calculate the mean of each test_mean based on the AdmissionType, then replaced the NA values by the calculated mean based on AdmissionType. `Data imputation2.Rmd` is the code for doing this data imputation.
 
-+ Mean inputation based on AdmissionType and number of tests: only use AdmissionType and numTest = 1 to filter the data, then calculate the mean of the test_mean after filtering. Replace the NA values with the calculated mean based on the AdmissionType. For the tests that do not have enough observations satisfy numTest=1, using test_range <= median(test_range) instead. 
++ Mean inputation based on AdmissionType and number of tests: only use AdmissionType and numTest = 1 to filter the data, then calculate the mean of the test_mean after filtering. Replace the NA values with the calculated mean based on the AdmissionType. For the tests that do not have enough observations satisfy numTest=1, using test_range <= median(test_range) instead. `Data imputation.Rmd` is the code for doing this data imputation.
 
-+ Mean inputation only based on the outcome: only use the recovered observation to calculate the mean for missing data regardless of other variables (Admission Type is **not** used for grouping), assuming this is the simpliest data imputation process.
++ Mean inputation only based on the outcome: only use the recovered observation to calculate the mean for missing data regardless of other variables (Admission Type is **not** used for grouping), assuming this is the simpliest data imputation process. `data_imputation_byOutcome_Ji.Rmd` is the code for doing this data imputation.
