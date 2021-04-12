@@ -8,7 +8,7 @@
 
 `testData.csv` is all the patient data files excpet the first 7089 files. Same as the `trainData.csv`, includes max, min, mean, range, changeStoF, and numTest for every thing other than the first 4 attributes. For the missing value, use the same method of data imputation that applies on `trainData.csv` to perform data imputation on this test data.
 
-`BrodysImpute_Age_Outcome_Gender-testSet.csv` and `BrodysImpute_Age_Outcome_Gender-trainSet.csv` are the final imputed training/test set we used to fit the models. We first compute the mean in training set based on age and gender, then replace the NA values in either training set or test set by the mean computed before based on the age and gender of the patient that has this NA value.
+`impute_testSet.csv` and `impute_trainSet.csv` are the final imputed training/test set we used to fit the models. We first compute the median in training set based on age, gender, and outcome; then replace the NA values in either training set or test set by the median computed before based on the age and gender of the patient that has this NA value.
 
 ### Other three ways we used to do mean imputation:
 
