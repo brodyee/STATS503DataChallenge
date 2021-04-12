@@ -17,10 +17,3 @@
 + Mean inputation based on AdmissionType and number of tests: only use AdmissionType and numTest = 1 to filter the data, then calculate the mean of the test_mean after filtering. Replace the NA values with the calculated mean based on the AdmissionType. For the tests that do not have enough observations satisfy numTest=1, using test_range <= median(test_range) instead. `Data imputation.Rmd` is the code for doing this data imputation.
 
 + Mean inputation only based on the outcome: only use the recovered observation to calculate the mean for missing data regardless of other variables (Admission Type is **not** used for grouping), assuming this is the simpliest data imputation process. `data_imputation_byOutcome_Ji.Rmd` is the code for doing this data imputation.
-
-
-### Model Fittings:
-
-+ Random Forest and Boosting: fit these two models on the final imputed training set, then use the final imputed test set to calculate the test error and AUC. After tuning the parameters, select the ones that has highest test accuracy and AUC values. Code for this part is `Model Fitting2.Rmd`.
-
-+ Support Vector Machines: use radial and polynomial kernal to fit the final inputed trainig set, use the same process described above to find the best svm model. Code for this part is `Model_Fitting_SVM.Rmd`.
